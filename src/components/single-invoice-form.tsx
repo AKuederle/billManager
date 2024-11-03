@@ -8,7 +8,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InvoiceTypes } from "@/db";
+import { Invoice, InvoiceTypes } from "@/db";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -16,71 +16,94 @@ import * as z from "zod";
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { SelectGroup, SelectLabel } from "@radix-ui/react-select";
+import { useEffect } from "react";
 
+
+
+const uploadFiles = async (files: FileList | null) => {
+    if (!files) return undefined;
+    const results = await Promise.all(
+        Array.from(files).map((file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve({
+                        name: file.name,
+                        type: file.type.includes('pdf') ? 'pdf' : 'image',
+                        data: reader.result as string
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        })
+    );
+    return results as { type: 'image' | 'pdf', data: string, name: string }[];
+}
 
 
 
 const formSchema = z.object({
+    id: z.string(),
     manual_id: z.string().min(1),
     amount: z.number().min(0),
     type: z.enum(InvoiceTypes),
     description: z.string(),
     date: z.date(),
-    files: z
-        .custom<FileList>()
-        .transform(async (files) => {
-            if (!files) return undefined;
-            const results = await Promise.all(
-                Array.from(files).map((file) => {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            resolve({
-                                name: file.name,
-                                type: file.type.includes('pdf') ? 'pdf' : 'image',
-                                data: reader.result as string
-                            });
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                })
-            );
-            return results as { type: 'image' | 'pdf', data: string, name: string }[];
-        })
+    files: z.object({
+        name: z.string(),
+        type: z.enum(["image", "pdf"]),
+        data: z.string()
+    }).array().optional()
 });
 
 type Props = {
     onNewInvoice: (invoice: z.infer<typeof formSchema>) => void;
-    defaultValues?: Partial<z.infer<typeof formSchema>> | undefined;
+    onCancel: () => void;
+    initialValues: Omit<z.infer<typeof formSchema>, "type"> & { type?: Invoice['type'] };
+    isNew: boolean;
 };
 
-export function InvoiceForm({ onNewInvoice: onNewInvoice, defaultValues }: Props) {
-
-    const actualDefaultValues = defaultValues || {
-        manual_id: "",
-        amount: 0,
-        type: undefined,
-        description: "",
-        date: new Date(),
-        files: []
-    }
-
+export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Props) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: { ...actualDefaultValues },
+        defaultValues: initialValues
     });
+
+    console.log(form.getFieldState("id"));
+    console.log(initialValues)
+
+
+    useEffect(() => {
+        form.reset(initialValues)
+    }, [initialValues]);
 
     const invoiceType = form.watch("type");
     const files = form.watch("files");
 
     const handleSubmit = (data: z.infer<typeof formSchema>) => {
         onNewInvoice(data);
-        form.reset(actualDefaultValues);
+        form.reset(initialValues);
+    }
+
+    const handelCancel = () => {
+        onCancel();
+        form.reset(initialValues);
     }
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="id"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormControl>
+                                <Input type="hidden" {...field} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
                 <FormField
                     control={form.control}
                     name="manual_id"
@@ -212,18 +235,17 @@ export function InvoiceForm({ onNewInvoice: onNewInvoice, defaultValues }: Props
                                     multiple
                                     accept="image/*,application/pdf"
                                     {...fieldProps}
-                                    onChange={(event) => {
-                                        onChange(event.target?.files);
+                                    onChange={async (event) => {
+                                        onChange(await uploadFiles(event.target?.files));
                                     }}
                                 />
                             </FormControl>
                             <FormMessage />
                             {files && (
                                 <div className="mt-4 grid grid-cols-2 gap-2">
-                                    {/* TODO: Figure how to properly type this */}
-                                    {Array.from(files as any as FileList).map((file, index) => (
-                                        file.type.includes("image") ? (
-                                            <img key={index} src={URL.createObjectURL(file)} alt={`File ${index + 1}`} className="w-full rounded-md" />
+                                    {files.map((file, index) => (
+                                        file.type === "image" ? (
+                                            <img key={index} src={file.data} alt={`File ${index + 1}`} className="w-full rounded-md" />
                                         ) : (
                                             <div key={index} className="p-4 border rounded-md text-center">PDF Document {index + 1}</div>
                                         )
@@ -234,8 +256,8 @@ export function InvoiceForm({ onNewInvoice: onNewInvoice, defaultValues }: Props
                     )}
                 />
 
-                <Button type="submit">Submit</Button>
-                <Button type="reset" onClick={() => form.reset(actualDefaultValues)}>Reset</Button>
+                <Button type="submit">{isNew ? "Add" : "Update"}</Button>
+                <Button type="reset" onClick={() => handelCancel()}>Cancel</Button>
             </form>
         </Form>
     );

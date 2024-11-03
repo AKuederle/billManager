@@ -1,36 +1,79 @@
 import { InvoiceForm } from '@/components/single-invoice-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { db, Invoice } from '@/db'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { useState } from 'react'
+import { db, Invoice, NEW_INVOICE_ID } from '@/db'
+import { createFileRoute, Link, redirect, useNavigate, useRouter } from '@tanstack/react-router'
+import { PenIcon, TrashIcon } from 'lucide-react'
+import { zodSearchValidator } from '@tanstack/router-zod-adapter'
+import { z } from 'zod'
 
+const searchSchema = z.object({
+  editInvoiceId: z.string().optional(),
+})
 
 export const Route = createFileRoute('/bills/$billId')({
   component: RouteComponent,
-  loader: ({ params: { billId } }) => {
+  validateSearch: zodSearchValidator(searchSchema),
+  loaderDeps: ({ search: { editInvoiceId } }) => ({ editInvoiceId }),
+  loader: ({ params: { billId }, deps: { editInvoiceId }}) => {
     const bill = db.getBill(billId)
     if (!bill) {
       throw new Error('Bill not found')
     }
+    // We check here, if the invoice id is valid, if not we navigate to undefined otherwise we return the editInvoice
+    type InvoiceWithOptionalType = Omit<Invoice, 'type'> & { type?: Invoice['type'] }
+    let editInvoice: InvoiceWithOptionalType | undefined;
+    if (editInvoiceId !== undefined) {
+      if (editInvoiceId === NEW_INVOICE_ID) {
+      editInvoice = {
+        id: NEW_INVOICE_ID,
+        manual_id: "",
+        amount: 0,
+        type: undefined,
+        description: "",
+        date: new Date(),
+        files: []
+      };
+      } else {
+      editInvoice = bill.invoices.find(invoice => invoice.id === editInvoiceId);
+      if (!editInvoice) {
+        throw redirect({
+        to: '.',
+        search: (prev) => ({ ...prev, editInvoiceId: undefined }),
+        });
+      }
+      }
+    }
     return {
       bill,
-    }
+      editInvoice,
+      editInvoiceId,
+    };
   }
 })
 
 function RouteComponent() {
-  const { bill } = Route.useLoaderData()
-  // TODO: Turn into search param
-  const [showForm, setShowForm] = useState(false)
-
+  // TODO: Add blocker, when form is modified, but not saved
+  const { bill, editInvoice, editInvoiceId } = Route.useLoaderData()
+  const navigate = useNavigate({ from: Route.fullPath })
+  
   const router = useRouter()
 
-
-  const handleInvoiceAdded = (invoice: Omit<Invoice, "id">) => {
+  const handleInvoiceAdded = async (invoice: Invoice) => {
     const invoiceFormated = { ...invoice, date: new Date(invoice.date) }
-    db.addInvoiceToBill(bill.id, invoiceFormated)
-    router.invalidate()
+    db.addOrUpdateInvoiceToBill(bill.id, invoiceFormated)
+    await router.invalidate()
+    await navigate({
+      to: '.',
+      search: (prev) => ({ ...prev, editInvoiceId: undefined }),
+    })
+  }
+
+  const handleCancel = async () => {
+    await navigate({
+      to: '.',
+      search: (prev) => ({ ...prev, editInvoiceId: undefined }),
+    })
   }
 
   const handleExport = async () => {
@@ -61,19 +104,22 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      <Button
-        onClick={() => setShowForm(!showForm)}
-      >
-        {showForm ? 'Hide Form' : 'Add Invoice'}
-      </Button>
+      <Link to="." search = {(prev) => ({...prev, editInvoiceId: NEW_INVOICE_ID})} hash="EDIT_CARD">
+        <Button disabled={editInvoiceId !== undefined}>
+          Add Invoice
+        </Button>
+      </Link>
       <Button onClick={() => handleExport()}>
         Export as zip
       </Button>
 
-      {showForm && (
-        <Card className="mb-4">
-          <CardContent className="pt-6">
-            <InvoiceForm onNewInvoice={handleInvoiceAdded} defaultValues={undefined} />
+      {editInvoice !== undefined && (
+        <Card className="mb-4" id='EDIT_CARD'>
+          <CardHeader>
+            <CardTitle>{editInvoiceId !== NEW_INVOICE_ID ? 'Edit Invoice' : 'Add Invoice'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InvoiceForm onNewInvoice={handleInvoiceAdded} onCancel={handleCancel} initialValues={editInvoice} isNew={editInvoiceId === NEW_INVOICE_ID}/>
           </CardContent>
         </Card>
       )}
@@ -83,7 +129,23 @@ function RouteComponent() {
           <li key={invoice.id}>
             <Card>
               <CardHeader>
-                <CardTitle>{invoice.manual_id}</CardTitle>
+                <div className="flex justify-between">
+                  <CardTitle>{invoice.manual_id}</CardTitle>
+                    <div>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                      db.deleteInvoiceFromBill(bill.id, invoice.id)
+                      router.invalidate()
+                      }}
+                    >
+                      <TrashIcon />
+                    </Button>
+                    <Link to="." search={(prev) => ({...prev, editInvoiceId: invoice.id})} hash="EDIT_CARD">
+                      <Button variant="ghost"><PenIcon /></Button>
+                    </Link>
+                    </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <p>Amount: {invoice.amount}</p>

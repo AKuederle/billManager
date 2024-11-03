@@ -6,6 +6,10 @@ export type CustomFileType = {
     type: "image" | "pdf"
     data: string
 }
+
+export const NEW_INVOICE_ID = '__new__'
+
+
 export const InvoiceTypes = [
     'Vorschuss',
     'Einahme',
@@ -70,16 +74,24 @@ export class LocalStorageDB {
         localStorage.setItem(this.BILLS_KEY, devalue.stringify(bills));
     }
 
-    public addInvoiceToBill(billId: string, invoice: Omit<Invoice, 'id'>): void {
+    public addOrUpdateInvoiceToBill(billId: string, invoice: Invoice): void {
         const bill = this.getBill(billId);
         if (!bill) return;
+        
+        let newInvoice: Invoice;
 
-        const newInvoice = {
-            ...invoice,
-            id: crypto.randomUUID()
-        };
+        if (invoice.id === NEW_INVOICE_ID) {
+            newInvoice = {...invoice, id: crypto.randomUUID()};
+            bill.invoices.push(newInvoice);
+        } else {
+            const index = bill.invoices.findIndex(inv => inv.id === invoice.id);
+            if (index >= 0) {
+                bill.invoices[index] = invoice;
+            } else {
+                throw new Error('Invoice not found and also not a new invoice');
+            }
+        }
 
-        bill.invoices.push(newInvoice);
         this.saveBill(bill);
     }
 
@@ -89,17 +101,6 @@ export class LocalStorageDB {
 
         bill.invoices = bill.invoices.filter(invoice => invoice.id !== invoiceId);
         this.saveBill(bill);
-    }
-
-    public updateInvoiceInBill(billId: string, invoice: Invoice): void {
-        const bill = this.getBill(billId);
-        if (!bill) return;
-
-        const index = bill.invoices.findIndex(inv => inv.id === invoice.id);
-        if (index >= 0) {
-            bill.invoices[index] = invoice;
-            this.saveBill(bill);
-        }
     }
 
     public async exportBillToZip(billId: string): Promise<Blob> {
