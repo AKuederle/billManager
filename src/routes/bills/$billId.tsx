@@ -7,6 +7,40 @@ import { PenIcon, TrashIcon } from 'lucide-react'
 import { zodSearchValidator } from '@tanstack/router-zod-adapter'
 import { z } from 'zod'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+
+const DownloadDialog = ({ children, onContinue }: { children: React.ReactNode, onContinue: () => void }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Download Data</AlertDialogTitle>
+        <AlertDialogDescription>
+          Wenn du auf "Weiter" klickst, wird eine Zip-Datei mit allen Daten heruntergeladen.
+          Schicke diese Datei per Email an die Schatzmeister:in.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+        <AlertDialogAction onClick={onContinue}>Weiter</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+)
+
+
+
 const searchSchema = z.object({
   editInvoiceId: z.string().optional(),
 })
@@ -15,7 +49,7 @@ export const Route = createFileRoute('/bills/$billId')({
   component: RouteComponent,
   validateSearch: zodSearchValidator(searchSchema),
   loaderDeps: ({ search: { editInvoiceId } }) => ({ editInvoiceId }),
-  loader: ({ params: { billId }, deps: { editInvoiceId }}) => {
+  loader: ({ params: { billId }, deps: { editInvoiceId } }) => {
     const bill = db.getBill(billId)
     if (!bill) {
       throw new Error('Bill not found')
@@ -25,23 +59,23 @@ export const Route = createFileRoute('/bills/$billId')({
     let editInvoice: InvoiceWithOptionalType | undefined;
     if (editInvoiceId !== undefined) {
       if (editInvoiceId === NEW_INVOICE_ID) {
-      editInvoice = {
-        id: NEW_INVOICE_ID,
-        manual_id: "",
-        amount: 0,
-        type: undefined,
-        description: "",
-        date: new Date(),
-        files: []
-      };
+        editInvoice = {
+          id: NEW_INVOICE_ID,
+          manual_id: "",
+          amount: 0,
+          type: undefined,
+          description: "",
+          date: new Date(),
+          files: []
+        };
       } else {
-      editInvoice = bill.invoices.find(invoice => invoice.id === editInvoiceId);
-      if (!editInvoice) {
-        throw redirect({
-        to: '.',
-        search: (prev) => ({ ...prev, editInvoiceId: undefined }),
-        });
-      }
+        editInvoice = bill.invoices.find(invoice => invoice.id === editInvoiceId);
+        if (!editInvoice) {
+          throw redirect({
+            to: '.',
+            search: (prev) => ({ ...prev, editInvoiceId: undefined }),
+          });
+        }
       }
     }
     return {
@@ -56,7 +90,7 @@ function RouteComponent() {
   // TODO: Add blocker, when form is modified, but not saved
   const { bill, editInvoice, editInvoiceId } = Route.useLoaderData()
   const navigate = useNavigate({ from: Route.fullPath })
-  
+
   const router = useRouter()
 
   const handleInvoiceAdded = async (invoice: Invoice) => {
@@ -104,14 +138,16 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      <Link to="." search = {(prev) => ({...prev, editInvoiceId: NEW_INVOICE_ID})} hash="EDIT_CARD">
+      <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD">
         <Button disabled={editInvoiceId !== undefined}>
           Add Invoice
         </Button>
       </Link>
-      <Button onClick={() => handleExport()}>
-        Export as zip
-      </Button>
+      <DownloadDialog onContinue={() => handleExport()}>
+        <Button>
+          Export as zip
+        </Button>
+      </DownloadDialog>
 
       {editInvoice !== undefined && (
         <Card className="mb-4" id='EDIT_CARD'>
@@ -119,7 +155,7 @@ function RouteComponent() {
             <CardTitle>{editInvoiceId !== NEW_INVOICE_ID ? 'Edit Invoice' : 'Add Invoice'}</CardTitle>
           </CardHeader>
           <CardContent>
-            <InvoiceForm onNewInvoice={handleInvoiceAdded} onCancel={handleCancel} initialValues={editInvoice} isNew={editInvoiceId === NEW_INVOICE_ID}/>
+            <InvoiceForm onNewInvoice={handleInvoiceAdded} onCancel={handleCancel} initialValues={editInvoice} isNew={editInvoiceId === NEW_INVOICE_ID} />
           </CardContent>
         </Card>
       )}
@@ -131,20 +167,20 @@ function RouteComponent() {
               <CardHeader>
                 <div className="flex justify-between">
                   <CardTitle>{invoice.manual_id}</CardTitle>
-                    <div>
+                  <div>
                     <Button
                       variant="ghost"
                       onClick={() => {
-                      db.deleteInvoiceFromBill(bill.id, invoice.id)
-                      router.invalidate()
+                        db.deleteInvoiceFromBill(bill.id, invoice.id)
+                        router.invalidate()
                       }}
                     >
                       <TrashIcon />
                     </Button>
-                    <Link to="." search={(prev) => ({...prev, editInvoiceId: invoice.id})} hash="EDIT_CARD">
+                    <Link to="." search={(prev) => ({ ...prev, editInvoiceId: invoice.id })} hash="EDIT_CARD">
                       <Button variant="ghost"><PenIcon /></Button>
                     </Link>
-                    </div>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
