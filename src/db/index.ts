@@ -134,10 +134,22 @@ export class LocalStorageDB {
             invoice.files = invoice.files.map((f) => f.name);
         });
 
-        const data = JSON.stringify(serializedBill, null, 2);
+        const {invoices, ...metadata} = serializedBill;
+
+        const metadataSerialized = JSON.stringify(metadata, null, 2);
 
         const zip = new JSZip()
-        zip.file('data.json', data)
+        zip.file('info.json', metadataSerialized)
+
+        // We store the invoices in a single csv file
+        const csvContent = invoices.map(invoice => {
+            const {files, ...rest} = invoice;
+            const filesStr = files ? files.join(';') : '';
+            return Object.values(rest).join(',') + ',' + filesStr + ',\n';
+        }).join('');
+        const csvHeader = Object.keys(invoices[0]).join(',') + '\n';
+
+        zip.file('invoices.csv', csvHeader + csvContent)
         
         // Add each file to the zip with an index and appropriate extension
         files.forEach((f) => {
