@@ -73,8 +73,6 @@ export function InvoiceForm({ onNewInvoice: onNewInvoice, defaultValues }: Props
     const invoiceType = form.watch("type");
     const files = form.watch("files");
 
-    console.log(files);
-
     const handleSubmit = (data: z.infer<typeof formSchema>) => {
         onNewInvoice(data);
         form.reset(actualDefaultValues);

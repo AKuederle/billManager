@@ -1,6 +1,11 @@
 import * as devalue from 'devalue';
+import JSZip from 'jszip';
 
-
+export type CustomFileType = {
+    name: string
+    type: "image" | "pdf"
+    data: string
+}
 export const InvoiceTypes = [
     'Vorschuss',
     'Einahme',
@@ -21,7 +26,7 @@ export type Invoice = {
     type: InvoiceType
     description: string
     date: Date
-    files: string[]
+    files?: CustomFileType[]
 }
 
 export type Bill = {
@@ -31,7 +36,7 @@ export type Bill = {
     iban: string
     date: Date
     invoices: Invoice[]
-    files: string[]
+    files?: CustomFileType[]
 }
 
 
@@ -97,7 +102,7 @@ export class LocalStorageDB {
         }
     }
 
-    public exportBillToZip(billId: string): string {
+    public async exportBillToZip(billId: string): Promise<Blob> {
 
         const bill = this.getBill(billId);
         if (!bill) throw new Error('Bill not found');
@@ -115,15 +120,29 @@ export class LocalStorageDB {
         };
 
         // extract all files from the bill and all invoices and replace them with their names
-        const files = [...bill.files];
-        serializedBill.files = files;
+        let files: CustomFileType[] = [];
+        if (serializedBill.files) {
+            files = [...files, ...serializedBill.files];
+            serializedBill.files = files.map((f) => f.name);
+        }
         serializedBill.invoices.forEach(invoice => {
+            if (!invoice.files) return;
             files.push(...invoice.files);
-            invoice.files = invoice.files.map((_, i) => `invoice_${invoice.id}_file_${i}`);
+            invoice.files = invoice.files.map((f) => f.name);
         });
-        
 
-        const metadata = JSON.stringify(serializedBill, null, 2);
+        const data = JSON.stringify(serializedBill, null, 2);
+
+        const zip = new JSZip()
+        zip.file('data.json', data)
+        
+        // Add each file to the zip with an index and appropriate extension
+        files.forEach((f) => {
+            zip.file(f.name, f.data.split(',')[1], { base64: true })
+        })
+
+        const content = await zip.generateAsync({ type: 'blob' })
+        return new Blob([content], { type: 'application/zip' })
     }
 }
 
