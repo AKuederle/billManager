@@ -13,6 +13,17 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
+import { Calendar } from "@/components/ui/calendar"
+import { FormDescription, FormMessage } from "@/components/ui/form"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+
 export const Route = createFileRoute('/bills/')({
   component: RouteComponent,
 })
@@ -22,7 +33,7 @@ const formSchema = z.object({
   name: z.string().min(1),
   responsiblePerson: z.string().min(1),
   iban: z.string().min(1),
-  date: z.string(),
+  date: z.date(),
 })
 
 function RouteComponent() {
@@ -33,7 +44,7 @@ function RouteComponent() {
       name: '',
       responsiblePerson: '',
       iban: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date(),
     },
   })
 
@@ -54,7 +65,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -97,11 +108,41 @@ function RouteComponent() {
             control={form.control}
             name="date"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <FormLabel>Datum</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[240px] pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      showOutsideDays={true}
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormDescription>
+                  Tag an dem die Abrechnung gemacht wird. (Normalerweise der heutige Tag)
+                </FormDescription>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -119,13 +160,13 @@ function RouteComponent() {
               <CardContent>
                 <p>Responsible: {bill.responsiblePerson}</p>
                 <p>IBAN: {bill.iban}</p>
-                <p>Date: {new Date(bill.date).toLocaleDateString()}</p>
+                <p>Date: {bill.date.toLocaleDateString()}</p>
               </CardContent>
             </Card>
           </Link>
         ))}
       </div>
-    </div>
+    </>
   )
 }
 

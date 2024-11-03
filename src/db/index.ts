@@ -17,7 +17,7 @@ export type Invoice = {
     amount: number
     type: InvoiceType
     description: string
-    date: string
+    date: Date
     files: string[]
 }
 
@@ -26,7 +26,7 @@ export type Bill = {
     name: string
     responsiblePerson: string
     iban: string
-    date: string
+    date: Date
     invoices: Invoice[]
     files: string[]
 }
@@ -35,9 +35,35 @@ export type Bill = {
 export class LocalStorageDB {
     private readonly BILLS_KEY = 'bills';
 
+    private serializeDates(obj: any): string {
+        return JSON.stringify(obj, (key, value) => {
+            if (value instanceof Date) {
+                return {
+                    __type: 'Date',
+                    value: value.toISOString()
+                };
+            }
+            return value;
+        });
+    }
+
+    private deserializeDates(obj: any): any {
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.deserializeDates(item));
+        } else if (obj !== null && typeof obj === 'object') {
+            if (obj.__type === 'Date' && obj.value) {
+                return new Date(obj.value);
+            }
+            return Object.fromEntries(
+                Object.entries(obj).map(([key, value]) => [key, this.deserializeDates(value)])
+            );
+        }
+        return obj;
+    }
+
     public getBills(): Bill[] {
         const data = localStorage.getItem(this.BILLS_KEY);
-        return data ? JSON.parse(data) : [];
+        return data ? this.deserializeDates(JSON.parse(data)) : [];
     }
 
     public getBill(id: string): Bill | undefined {
@@ -54,12 +80,12 @@ export class LocalStorageDB {
             bills.push(bill);
         }
 
-        localStorage.setItem(this.BILLS_KEY, JSON.stringify(bills));
+        localStorage.setItem(this.BILLS_KEY, this.serializeDates(bills));
     }
 
     public deleteBill(id: string): void {
         const bills = this.getBills().filter(bill => bill.id !== id);
-        localStorage.setItem(this.BILLS_KEY, JSON.stringify(bills));
+        localStorage.setItem(this.BILLS_KEY, this.serializeDates(bills));
     }
 
     public addInvoiceToBill(billId: string, invoice: Omit<Invoice, 'id'>): void {

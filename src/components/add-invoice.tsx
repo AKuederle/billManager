@@ -68,7 +68,7 @@ export function AddInvoice() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-md">
+    <>
       <h1 className="text-2xl font-bold mb-4">Belege Upload</h1>
       <div className="space-y-4">
         <div>
@@ -111,6 +111,6 @@ export function AddInvoice() {
           <Download className="mr-2 h-4 w-4" /> Download
         </Button>
       </div>
-    </div>
+      </>
   )
 }
