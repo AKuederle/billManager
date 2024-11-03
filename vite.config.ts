@@ -10,6 +10,7 @@ export default defineConfig({
     TanStackRouterVite(),
     react()
   ],
+  base: process.env.NODE_ENV === 'production' ? "/billManager/" : "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
