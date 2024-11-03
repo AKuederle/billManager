@@ -1,3 +1,6 @@
+import * as devalue from 'devalue';
+
+
 export const InvoiceTypes = [
     'Vorschuss',
     'Einahme',
@@ -35,35 +38,9 @@ export type Bill = {
 export class LocalStorageDB {
     private readonly BILLS_KEY = 'bills';
 
-    private serializeDates(obj: any): string {
-        return JSON.stringify(obj, (key, value) => {
-            if (value instanceof Date) {
-                return {
-                    __type: 'Date',
-                    value: value.toISOString()
-                };
-            }
-            return value;
-        });
-    }
-
-    private deserializeDates(obj: any): any {
-        if (Array.isArray(obj)) {
-            return obj.map(item => this.deserializeDates(item));
-        } else if (obj !== null && typeof obj === 'object') {
-            if (obj.__type === 'Date' && obj.value) {
-                return new Date(obj.value);
-            }
-            return Object.fromEntries(
-                Object.entries(obj).map(([key, value]) => [key, this.deserializeDates(value)])
-            );
-        }
-        return obj;
-    }
-
     public getBills(): Bill[] {
         const data = localStorage.getItem(this.BILLS_KEY);
-        return data ? this.deserializeDates(JSON.parse(data)) : [];
+        return data ? devalue.parse(data) : [];
     }
 
     public getBill(id: string): Bill | undefined {
@@ -80,12 +57,12 @@ export class LocalStorageDB {
             bills.push(bill);
         }
 
-        localStorage.setItem(this.BILLS_KEY, this.serializeDates(bills));
+        localStorage.setItem(this.BILLS_KEY, devalue.stringify(bills));
     }
 
     public deleteBill(id: string): void {
         const bills = this.getBills().filter(bill => bill.id !== id);
-        localStorage.setItem(this.BILLS_KEY, this.serializeDates(bills));
+        localStorage.setItem(this.BILLS_KEY, devalue.stringify(bills));
     }
 
     public addInvoiceToBill(billId: string, invoice: Omit<Invoice, 'id'>): void {
@@ -118,6 +95,24 @@ export class LocalStorageDB {
             bill.invoices[index] = invoice;
             this.saveBill(bill);
         }
+    }
+
+    public exportBillToString(billId: string): string {
+
+        const bill = this.getBill(billId);
+        if (!bill) throw new Error('Bill not found');
+
+        // Convert dates to ISO strings for JSON serialization
+        const serializedBill = {
+            ...bill,
+            date: bill.date.toISOString(),
+            invoices: bill.invoices.map(invoice => ({
+                ...invoice,
+                date: invoice.date.toISOString()
+            }))
+        };
+
+        return JSON.stringify(serializedBill, null, 2);
     }
 }
 

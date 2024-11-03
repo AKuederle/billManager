@@ -58,6 +58,9 @@ function RouteComponent() {
       files: [],
       invoices: [],
       ...values,
+      // Note: Not sure if this is the correct way to handle dates here
+      //       There should be a better way...
+      date: new Date(values.date),
     }
     db.saveBill(newBill)
     setBills(db.getBills())

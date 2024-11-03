@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { db, Invoice } from '@/db'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { InvoiceForm } from '@/components/single-invoice-form'
+import { date } from 'zod'
 
 export const Route = createFileRoute('/bills/$billId')({
   component: RouteComponent,
@@ -23,7 +24,8 @@ function RouteComponent() {
 
 
   const handleInvoiceAdded = (invoice: Omit<Invoice, "id">) => {
-    db.addInvoiceToBill(bill.id, invoice)
+    const invoiceFormated = { ...invoice, date: new Date(invoice.date) }
+    db.addInvoiceToBill(bill.id, invoiceFormated)
     router.invalidate()
   } 
 
