@@ -9,7 +9,11 @@ import { routeTree } from './routeTree.gen'
 import { DBProvider } from './db/dbContext'
 
 // Create a new router instance
-const router = createRouter({ routeTree,   defaultPreload: 'intent'})
+const router = createRouter({ 
+  routeTree, 
+  defaultPreload: 'intent',
+  basepath: import.meta.env.BASE_URL
+})
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
