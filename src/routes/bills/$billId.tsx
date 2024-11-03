@@ -40,7 +40,8 @@ function RouteComponent() {
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${bill.name}.zip`
+    link.setAttribute('download', `${bill.name}.zip`)
+    link.style.display = 'none'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
