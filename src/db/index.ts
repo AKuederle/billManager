@@ -123,11 +123,13 @@ export class LocalStorageDB {
         let files: CustomFileType[] = [];
         if (serializedBill.files) {
             files = [...files, ...serializedBill.files];
+            // @ts-ignore
             serializedBill.files = files.map((f) => f.name);
         }
         serializedBill.invoices.forEach(invoice => {
             if (!invoice.files) return;
             files.push(...invoice.files);
+            // @ts-ignore
             invoice.files = invoice.files.map((f) => f.name);
         });
 

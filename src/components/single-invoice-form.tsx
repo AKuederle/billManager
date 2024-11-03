@@ -220,7 +220,8 @@ export function InvoiceForm({ onNewInvoice: onNewInvoice, defaultValues }: Props
                             <FormMessage />
                             {files && (
                                 <div className="mt-4 grid grid-cols-2 gap-2">
-                                    {Array.from(files).map((file, index) => (
+                                    {/* TODO: Figure how to properly type this */}
+                                    {Array.from(files as any as FileList).map((file, index) => (
                                         file.type.includes("image") ? (
                                             <img key={index} src={URL.createObjectURL(file)} alt={`File ${index + 1}`} className="w-full rounded-md" />
                                         ) : (

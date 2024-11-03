@@ -1,12 +1,9 @@
-import * as React from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import { AddInvoice } from '@/components/add-invoice'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: RouteComponent,
+  loader: () => {
+    throw redirect({
+      to: '/bills'
+    })
+  }
 })
-
-function RouteComponent() {
-  return  <AddInvoice />
-
-}
