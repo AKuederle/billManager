@@ -97,10 +97,12 @@ export class LocalStorageDB {
         }
     }
 
-    public exportBillToString(billId: string): string {
+    public exportBillToZip(billId: string): string {
 
         const bill = this.getBill(billId);
         if (!bill) throw new Error('Bill not found');
+
+
 
         // Convert dates to ISO strings for JSON serialization
         const serializedBill = {
@@ -112,7 +114,16 @@ export class LocalStorageDB {
             }))
         };
 
-        return JSON.stringify(serializedBill, null, 2);
+        // extract all files from the bill and all invoices and replace them with their names
+        const files = [...bill.files];
+        serializedBill.files = files;
+        serializedBill.invoices.forEach(invoice => {
+            files.push(...invoice.files);
+            invoice.files = invoice.files.map((_, i) => `invoice_${invoice.id}_file_${i}`);
+        });
+        
+
+        const metadata = JSON.stringify(serializedBill, null, 2);
     }
 }
 
