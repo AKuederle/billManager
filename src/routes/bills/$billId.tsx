@@ -1,6 +1,6 @@
 import { InvoiceForm } from '@/components/single-invoice-form'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { db, Invoice, NEW_INVOICE_ID } from '@/db'
 import { createFileRoute, Link, redirect, useNavigate, useRouter } from '@tanstack/react-router'
 import { PenIcon, TrashIcon } from 'lucide-react'
@@ -166,7 +166,10 @@ function RouteComponent() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between">
-                  <CardTitle>{invoice.manual_id}</CardTitle>
+                  <div>
+                    <CardTitle>{invoice.description}</CardTitle>
+                    <CardDescription>{invoice.manual_id}</CardDescription>
+                  </div>
                   <div>
                     <Button
                       variant="ghost"
