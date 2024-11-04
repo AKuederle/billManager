@@ -45,7 +45,7 @@ const uploadFiles = async (files: FileList | null) => {
 const formSchema = z.object({
     id: z.string(),
     manual_id: z.string().min(1),
-    amount: z.number().min(0),
+    amount: z.number().min(0, "Der Betrag muss größer als 0 sein."),
     type: z.enum(InvoiceTypes),
     description: z.string(),
     date: z.date(),
@@ -125,7 +125,7 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
                         <FormItem>
                             <FormLabel>Amount</FormLabel>
                             <FormControl>
-                                <Input type="number" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                                <Input type="number" min="0" step="0.01" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -255,9 +255,10 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
                         </FormItem>
                     )}
                 />
-
-                <Button type="submit">{isNew ? "Add" : "Update"}</Button>
-                <Button type="reset" onClick={() => handelCancel()}>Cancel</Button>
+                <div className="flex sm:flex-row flex-col gap-2">
+                <Button type="submit" className="flex-1">{isNew ? "Add" : "Update"}</Button>
+                <Button variant="outline" type="reset" className="flex-1" onClick={() => handelCancel()}>Cancel</Button>
+                </div>
             </form>
         </Form>
     );

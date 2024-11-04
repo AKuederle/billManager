@@ -148,7 +148,7 @@ function RouteComponent() {
       </Button>
 
       <DownloadDialog onContinue={() => handleExport()}>
-        <Button className="flex-1" variant="outline">
+        <Button className="flex-1">
           Export as zip
         </Button>
       </DownloadDialog>
