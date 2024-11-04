@@ -74,6 +74,7 @@ export const Route = createFileRoute('/bills/$billId')({
           throw redirect({
             to: '.',
             search: (prev) => ({ ...prev, editInvoiceId: undefined }),
+            replace: true,
           });
         }
       }
@@ -107,6 +108,7 @@ function RouteComponent() {
     await navigate({
       to: '.',
       search: (prev) => ({ ...prev, editInvoiceId: undefined }),
+      replace: true,
     })
   }
 
@@ -138,7 +140,7 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD">
+      <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true}>
         <Button disabled={editInvoiceId !== undefined}>
           Add Invoice
         </Button>
@@ -180,7 +182,7 @@ function RouteComponent() {
                     >
                       <TrashIcon />
                     </Button>
-                    <Link to="." search={(prev) => ({ ...prev, editInvoiceId: invoice.id })} hash="EDIT_CARD">
+                    <Link to="." search={(prev) => ({ ...prev, editInvoiceId: invoice.id })} hash="EDIT_CARD" replace={true}>
                       <Button variant="ghost"><PenIcon /></Button>
                     </Link>
                   </div>
