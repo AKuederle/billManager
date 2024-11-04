@@ -140,7 +140,7 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col sm:flex-row gap-x-4 gap-y-2">
+      <div className="flex flex-col sm:flex-row gap-x-2 gap-y-2">
       <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
         <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true} >
             Add Invoice
@@ -165,10 +165,9 @@ function RouteComponent() {
         </Card>
       )}
       <h2 className="text-2xl font-bold">Invoices</h2>
-      <ul>
+      <div className="flex flex-col gap-y-2">
         {bill.invoices.map(invoice => (
-          <li key={invoice.id}>
-            <Card>
+            <Card key={invoice.id}>
               <CardHeader>
                 <div className="flex justify-between">
                   <div>
@@ -198,9 +197,8 @@ function RouteComponent() {
                 <p>Date: {invoice.date.toLocaleDateString()}</p>
               </CardContent>
             </Card>
-          </li>
         ))}
-      </ul>
+      </div>
       </div>
   )
 }
