@@ -127,14 +127,14 @@ export class LocalStorageDB {
             // @ts-ignore
             serializedBill.files = files.map((f) => f.name);
         }
-        serializedBill.invoices.forEach(invoice => {
-            if (!invoice.files) return;
+        const {invoices, ...metadata} = serializedBill;
+
+        const invoicesFormated = invoices.map(invoice => {
+            if (!invoice.files) return {...invoice, files: []};
             files.push(...invoice.files);
-            // @ts-ignore
-            invoice.files = invoice.files.map((f) => f.name);
+            return {...invoice, files: invoice.files.map((f) => f.name)};
         });
 
-        const {invoices, ...metadata} = serializedBill;
 
         const metadataSerialized = JSON.stringify(metadata, null, 2);
 
@@ -142,12 +142,15 @@ export class LocalStorageDB {
         zip.file('info.json', metadataSerialized)
 
         // We store the invoices in a single csv file
-        const csvContent = invoices.map(invoice => {
-            const {files, ...rest} = invoice;
-            const filesStr = files ? files.join(';') : '';
-            return Object.values(rest).join(',') + ',' + filesStr + ',\n';
+        const csvContent = invoicesFormated.map(invoice => {
+            const {id, files, ...rest} = invoice;
+            const filesStr = files ? files.map(f => f.replace(/;/g, '\\;')).join(',') : '';
+            const values = Object.values(rest).map(v => String(v).replace(/;/g, '\\;'));
+            return values.join(';') + ';' + filesStr + '\n';
         }).join('');
-        const csvHeader = Object.keys(invoices[0]).join(',') + '\n';
+        const csvHeader = Object.keys(invoices[0])
+            .filter(key => key !== 'id')
+            .join(';') + '\n';
 
         zip.file('invoices.csv', csvHeader + csvContent)
         
