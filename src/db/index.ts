@@ -135,6 +135,12 @@ export class LocalStorageDB {
 
             return {...invoice, amount: invoice.amount.toLocaleString('de-DE'), files: invoice.files.map((f) => f.name)};
         });
+        
+        const invoiceTotals = invoices.reduce((acc, invoice) => {
+            const type = invoice.type;
+            acc[type] = (acc[type] || 0) + invoice.amount;
+            return acc;
+        }, {} as Record<InvoiceType, number>);
 
 
         const metadataSerialized = JSON.stringify(metadata, null, 2);
@@ -154,6 +160,14 @@ export class LocalStorageDB {
             .join(';') + '\n';
 
         zip.file('invoices.csv', csvHeader + csvContent)
+
+        // We store the invoice totals in a separate csv
+        const totalsCsvContent = InvoiceTypes.map(type => {
+            const amount = invoiceTotals[type] || 0;
+            return `${type};${amount.toLocaleString('de-DE')}\n`;
+        }).join('');
+
+        zip.file('invoice_totals.csv', 'Type;Amount\n' + totalsCsvContent)
         
         // Add each file to the zip with an index and appropriate extension
         files.forEach((f) => {
