@@ -132,7 +132,8 @@ export class LocalStorageDB {
         const invoicesFormated = invoices.map(invoice => {
             if (!invoice.files) return {...invoice, files: []};
             files.push(...invoice.files);
-            return {...invoice, files: invoice.files.map((f) => f.name)};
+
+            return {...invoice, amount: invoice.amount.toLocaleString('de-DE'), files: invoice.files.map((f) => f.name)};
         });
 
 
