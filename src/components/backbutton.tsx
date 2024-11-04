@@ -12,14 +12,15 @@ export function BackButton({homeRoute}: {homeRoute?: string}) {
     }
 
     return (
-        <Link to={homeRoute}>
         <Button
             variant="default"
             size="icon"
             className="rounded-full w-10 h-10"
+            asChild
         >
-            <HomeIcon className="h-10 w-10" />
+            <Link to={homeRoute}>
+                <HomeIcon className="h-10 w-10" />
+            </Link>
         </Button>
-        </Link>
     );
 }

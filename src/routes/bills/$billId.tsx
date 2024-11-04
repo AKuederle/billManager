@@ -128,7 +128,7 @@ function RouteComponent() {
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-y-4">
       <Card>
         <CardHeader>
           <CardTitle>{bill.name}</CardTitle>
@@ -140,16 +140,19 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true}>
-        <Button disabled={editInvoiceId !== undefined}>
-          Add Invoice
-        </Button>
-      </Link>
+      <div className="flex flex-col sm:flex-row gap-x-4 gap-y-2">
+      <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
+        <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true} >
+            Add Invoice
+        </Link>
+      </Button>
+
       <DownloadDialog onContinue={() => handleExport()}>
-        <Button>
+        <Button className="flex-1" variant="outline">
           Export as zip
         </Button>
       </DownloadDialog>
+      </div>
 
       {editInvoice !== undefined && (
         <Card className="mb-4" id='EDIT_CARD'>
@@ -182,9 +185,11 @@ function RouteComponent() {
                     >
                       <TrashIcon />
                     </Button>
-                    <Link to="." search={(prev) => ({ ...prev, editInvoiceId: invoice.id })} hash="EDIT_CARD" replace={true}>
-                      <Button variant="ghost"><PenIcon /></Button>
-                    </Link>
+                    <Button variant="ghost" asChild>
+                      <Link to="." search={(prev) => ({ ...prev, editInvoiceId: invoice.id })} hash="EDIT_CARD" replace={true}>
+                        <PenIcon />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -196,6 +201,6 @@ function RouteComponent() {
           </li>
         ))}
       </ul>
-    </>
+      </div>
   )
 }
