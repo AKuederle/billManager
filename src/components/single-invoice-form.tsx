@@ -66,9 +66,6 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
     defaultValues: initialValues,
   });
 
-  console.log(form.getFieldState("id"));
-  console.log(initialValues);
-
   useEffect(() => {
     form.reset(initialValues);
   }, [initialValues, form]);
@@ -253,10 +250,10 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
         />
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button type="submit" className="flex-1">
-            {isNew ? "Add" : "Update"}
+            {isNew ? "Erstellen" : "Speichern"}
           </Button>
           <Button variant="outline" type="reset" className="flex-1" onClick={() => handelCancel()}>
-            Cancel
+            Abbrechen
           </Button>
         </div>
       </form>

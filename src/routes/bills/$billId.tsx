@@ -1,7 +1,7 @@
 import { InvoiceForm } from "@/components/single-invoice-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { db, Invoice, NEW_INVOICE_ID } from "@/db";
+import { db, Invoice, NEW_ID } from "@/db";
 import { createFileRoute, Link, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { PenIcon, TrashIcon } from "lucide-react";
 import { zodSearchValidator } from "@tanstack/router-zod-adapter";
@@ -57,9 +57,9 @@ export const Route = createFileRoute("/bills/$billId")({
     };
     let editInvoice: InvoiceWithOptionalType | undefined;
     if (editInvoiceId !== undefined) {
-      if (editInvoiceId === NEW_INVOICE_ID) {
+      if (editInvoiceId === NEW_ID) {
         editInvoice = {
-          id: NEW_INVOICE_ID,
+          id: NEW_ID,
           manual_id: "",
           amount: 0,
           type: undefined,
@@ -140,12 +140,7 @@ function RouteComponent() {
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
-              <Link
-                to="."
-                search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })}
-                hash="EDIT_CARD"
-                replace={true}
-              >
+              <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_ID })} hash="EDIT_CARD" replace={true}>
                 Add Invoice
               </Link>
             </Button>
@@ -160,14 +155,14 @@ function RouteComponent() {
       {editInvoice !== undefined && (
         <Card className="mb-4" id="EDIT_CARD">
           <CardHeader>
-            <CardTitle>{editInvoiceId !== NEW_INVOICE_ID ? "Edit Invoice" : "Add Invoice"}</CardTitle>
+            <CardTitle>{editInvoiceId !== NEW_ID ? "Edit Invoice" : "Add Invoice"}</CardTitle>
           </CardHeader>
           <CardContent>
             <InvoiceForm
               onNewInvoice={handleInvoiceAdded}
               onCancel={handleCancel}
               initialValues={editInvoice}
-              isNew={editInvoiceId === NEW_INVOICE_ID}
+              isNew={editInvoiceId === NEW_ID}
             />
           </CardContent>
         </Card>

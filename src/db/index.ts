@@ -7,7 +7,7 @@ export type CustomFileType = {
   data: string;
 };
 
-export const NEW_INVOICE_ID = "__new__";
+export const NEW_ID = "__new__";
 
 export const InvoiceTypes = [
   "Vorschuss",
@@ -53,14 +53,19 @@ export class LocalStorageDB {
     return this.getBills().find((bill) => bill.id === id);
   }
 
-  public saveBill(bill: Bill): void {
+  public addOrUpdateBill(bill: Bill): void {
     const bills = this.getBills();
-    const index = bills.findIndex((b) => b.id === bill.id);
 
-    if (index >= 0) {
-      bills[index] = bill;
+    if (bill.id === NEW_ID) {
+      const newBill = { ...bill, id: crypto.randomUUID() };
+      bills.push(newBill);
     } else {
-      bills.push(bill);
+      const index = bills.findIndex((b) => b.id === bill.id);
+      if (index >= 0) {
+        bills[index] = bill;
+      } else {
+        bills.push(bill);
+      }
     }
 
     localStorage.setItem(this.BILLS_KEY, devalue.stringify(bills));
@@ -77,7 +82,7 @@ export class LocalStorageDB {
 
     let newInvoice: Invoice;
 
-    if (invoice.id === NEW_INVOICE_ID) {
+    if (invoice.id === NEW_ID) {
       newInvoice = { ...invoice, id: crypto.randomUUID() };
       bill.invoices.push(newInvoice);
     } else {
@@ -89,7 +94,7 @@ export class LocalStorageDB {
       }
     }
 
-    this.saveBill(bill);
+    this.addOrUpdateBill(bill);
   }
 
   public deleteInvoiceFromBill(billId: string, invoiceId: string): void {
@@ -97,7 +102,7 @@ export class LocalStorageDB {
     if (!bill) return;
 
     bill.invoices = bill.invoices.filter((invoice) => invoice.id !== invoiceId);
-    this.saveBill(bill);
+    this.addOrUpdateBill(bill);
   }
 
   public async exportBillToZip(billId: string): Promise<Blob> {
