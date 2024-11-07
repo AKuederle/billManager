@@ -132,24 +132,30 @@ function RouteComponent() {
         <CardHeader>
           <CardTitle>{bill.name}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p>Responsible: {bill.responsiblePerson}</p>
-          <p>IBAN: {bill.iban}</p>
-          <p>Date: {bill.date.toLocaleDateString()}</p>
+        <CardContent className="flex flex-col gap-y-4">
+          <div className="">
+            <p>Responsible: {bill.responsiblePerson}</p>
+            <p>IBAN: {bill.iban}</p>
+            <p>Date: {bill.date.toLocaleDateString()}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
+              <Link
+                to="."
+                search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })}
+                hash="EDIT_CARD"
+                replace={true}
+              >
+                Add Invoice
+              </Link>
+            </Button>
+
+            <DownloadDialog onContinue={() => handleExport()}>
+              <Button className="flex-1">Export as zip</Button>
+            </DownloadDialog>
+          </div>
         </CardContent>
       </Card>
-
-      <div className="flex flex-col gap-x-2 gap-y-2 sm:flex-row">
-        <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
-          <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true}>
-            Add Invoice
-          </Link>
-        </Button>
-
-        <DownloadDialog onContinue={() => handleExport()}>
-          <Button className="flex-1">Export as zip</Button>
-        </DownloadDialog>
-      </div>
 
       {editInvoice !== undefined && (
         <Card className="mb-4" id="EDIT_CARD">
