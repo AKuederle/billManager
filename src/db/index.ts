@@ -123,7 +123,7 @@ export class LocalStorageDB {
     let files: CustomFileType[] = [];
     if (serializedBill.files) {
       files = [...files, ...serializedBill.files];
-      // @ts-expext-error
+      // @ts-expect-error
       serializedBill.files = files.map((f) => f.name);
     }
     const { invoices, ...metadata } = serializedBill;

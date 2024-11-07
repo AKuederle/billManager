@@ -72,17 +72,16 @@ function RouteComponent() {
 
   const isNew = editBillId === NEW_ID;
 
-  const handleBillSaved = async (values: Bill) => {
+  const handleBillSaved = async (values: Omit<Bill, "invoices">) => {
     // TODO: We should move this to the db
-    if (values.invoices === undefined) {
-      if (values.id === NEW_ID) {
-        values.invoices = [];
-      } else {
-        values.invoices = db.getBill(values.id)?.invoices ?? [];
-      }
+    let bill: Bill;
+    if (values.id === NEW_ID) {
+      bill = { ...values, invoices: [] };
+    } else {
+      bill = { ...values, invoices: db.getBill(values.id)?.invoices ?? [] };
     }
 
-    db.addOrUpdateBill(values);
+    db.addOrUpdateBill(bill);
     await navigate({
       to: ".",
       search: (prev) => ({ ...prev, editBillId: undefined }),
@@ -190,7 +189,14 @@ const formSchema = z.object({
   }),
 });
 
-const BillForm = ({ onBillSaved, onCancel, initialValues, isNew }) => {
+type Props = {
+  onBillSaved: (bill: z.infer<typeof formSchema>) => void;
+  onCancel: () => void;
+  initialValues: Bill;
+  isNew: boolean;
+};
+
+const BillForm = ({ onBillSaved, onCancel, initialValues, isNew }: Props) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
