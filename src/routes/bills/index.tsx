@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import type { Bill } from "@/db";
 import { db } from "@/db";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -20,6 +19,11 @@ import { CalendarIcon, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/bills/")({
   component: RouteComponent,
+  loader: () => {
+    return {
+      bills: db.getBills(),
+    };
+  },
 });
 
 const formSchema = z.object({
@@ -37,7 +41,8 @@ const formSchema = z.object({
 });
 
 function RouteComponent() {
-  const [bills, setBills] = useState<Bill[]>([]);
+  const { bills } = Route.useLoaderData();
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,10 +52,6 @@ function RouteComponent() {
       date: new Date(),
     },
   });
-
-  useEffect(() => {
-    setBills(db.getBills());
-  }, []);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const newBill: Bill = {
@@ -63,8 +64,8 @@ function RouteComponent() {
       date: new Date(values.date),
     };
     db.saveBill(newBill);
-    setBills(db.getBills());
     form.reset();
+    router.invalidate();
   }
 
   return (
