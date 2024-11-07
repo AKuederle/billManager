@@ -5,12 +5,10 @@ on:
     branches:
       - main
 
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -44,7 +42,7 @@ jobs:
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./dist
-        
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2

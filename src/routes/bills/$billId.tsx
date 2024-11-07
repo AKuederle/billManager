@@ -1,11 +1,11 @@
-import { InvoiceForm } from '@/components/single-invoice-form'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { db, Invoice, NEW_INVOICE_ID } from '@/db'
-import { createFileRoute, Link, redirect, useNavigate, useRouter } from '@tanstack/react-router'
-import { PenIcon, TrashIcon } from 'lucide-react'
-import { zodSearchValidator } from '@tanstack/router-zod-adapter'
-import { z } from 'zod'
+import { InvoiceForm } from "@/components/single-invoice-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { db, Invoice, NEW_INVOICE_ID } from "@/db";
+import { createFileRoute, Link, redirect, useNavigate, useRouter } from "@tanstack/react-router";
+import { PenIcon, TrashIcon } from "lucide-react";
+import { zodSearchValidator } from "@tanstack/router-zod-adapter";
+import { z } from "zod";
 
 import {
   AlertDialog,
@@ -17,18 +17,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
-
-const DownloadDialog = ({ children, onContinue }: { children: React.ReactNode, onContinue: () => void }) => (
+const DownloadDialog = ({ children, onContinue }: { children: React.ReactNode; onContinue: () => void }) => (
   <AlertDialog>
     <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>Download Data</AlertDialogTitle>
         <AlertDialogDescription>
-          Wenn du auf "Weiter" klickst, wird eine Zip-Datei mit allen Daten heruntergeladen.
-          Schicke diese Datei per Email an die Schatzmeister:in.
+          Wenn du auf "Weiter" klickst, wird eine Zip-Datei mit allen Daten heruntergeladen. Schicke diese Datei per
+          Email an die Schatzmeister:in.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
@@ -37,25 +36,25 @@ const DownloadDialog = ({ children, onContinue }: { children: React.ReactNode, o
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
-)
-
-
+);
 
 const searchSchema = z.object({
   editInvoiceId: z.string().optional(),
-})
+});
 
-export const Route = createFileRoute('/bills/$billId')({
+export const Route = createFileRoute("/bills/$billId")({
   component: RouteComponent,
   validateSearch: zodSearchValidator(searchSchema),
   loaderDeps: ({ search: { editInvoiceId } }) => ({ editInvoiceId }),
   loader: ({ params: { billId }, deps: { editInvoiceId } }) => {
-    const bill = db.getBill(billId)
+    const bill = db.getBill(billId);
     if (!bill) {
-      throw new Error('Bill not found')
+      throw new Error("Bill not found");
     }
     // We check here, if the invoice id is valid, if not we navigate to undefined otherwise we return the editInvoice
-    type InvoiceWithOptionalType = Omit<Invoice, 'type'> & { type?: Invoice['type'] }
+    type InvoiceWithOptionalType = Omit<Invoice, "type"> & {
+      type?: Invoice["type"];
+    };
     let editInvoice: InvoiceWithOptionalType | undefined;
     if (editInvoiceId !== undefined) {
       if (editInvoiceId === NEW_INVOICE_ID) {
@@ -66,13 +65,13 @@ export const Route = createFileRoute('/bills/$billId')({
           type: undefined,
           description: "",
           date: new Date(),
-          files: []
+          files: [],
         };
       } else {
-        editInvoice = bill.invoices.find(invoice => invoice.id === editInvoiceId);
+        editInvoice = bill.invoices.find((invoice) => invoice.id === editInvoiceId);
         if (!editInvoice) {
           throw redirect({
-            to: '.',
+            to: ".",
             search: (prev) => ({ ...prev, editInvoiceId: undefined }),
             replace: true,
           });
@@ -84,48 +83,48 @@ export const Route = createFileRoute('/bills/$billId')({
       editInvoice,
       editInvoiceId,
     };
-  }
-})
+  },
+});
 
 function RouteComponent() {
   // TODO: Add blocker, when form is modified, but not saved
-  const { bill, editInvoice, editInvoiceId } = Route.useLoaderData()
-  const navigate = useNavigate({ from: Route.fullPath })
+  const { bill, editInvoice, editInvoiceId } = Route.useLoaderData();
+  const navigate = useNavigate({ from: Route.fullPath });
 
-  const router = useRouter()
+  const router = useRouter();
 
   const handleInvoiceAdded = async (invoice: Invoice) => {
-    const invoiceFormated = { ...invoice, date: new Date(invoice.date) }
-    db.addOrUpdateInvoiceToBill(bill.id, invoiceFormated)
-    await router.invalidate()
+    const invoiceFormated = { ...invoice, date: new Date(invoice.date) };
+    db.addOrUpdateInvoiceToBill(bill.id, invoiceFormated);
+    await router.invalidate();
     await navigate({
-      to: '.',
+      to: ".",
       search: (prev) => ({ ...prev, editInvoiceId: undefined }),
-    })
-  }
+    });
+  };
 
   const handleCancel = async () => {
     await navigate({
-      to: '.',
+      to: ".",
       search: (prev) => ({ ...prev, editInvoiceId: undefined }),
       replace: true,
-    })
-  }
+    });
+  };
 
   const handleExport = async () => {
-    const dataBlob = await db.exportBillToZip(bill.id)
-    if (!dataBlob) return
+    const dataBlob = await db.exportBillToZip(bill.id);
+    if (!dataBlob) return;
 
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `${bill.name}.zip`)
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${bill.name}.zip`);
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -140,65 +139,76 @@ function RouteComponent() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col sm:flex-row gap-x-2 gap-y-2">
-      <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
-        <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true} >
+      <div className="flex flex-col gap-x-2 gap-y-2 sm:flex-row">
+        <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
+          <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_INVOICE_ID })} hash="EDIT_CARD" replace={true}>
             Add Invoice
-        </Link>
-      </Button>
-
-      <DownloadDialog onContinue={() => handleExport()}>
-        <Button className="flex-1">
-          Export as zip
+          </Link>
         </Button>
-      </DownloadDialog>
+
+        <DownloadDialog onContinue={() => handleExport()}>
+          <Button className="flex-1">Export as zip</Button>
+        </DownloadDialog>
       </div>
 
       {editInvoice !== undefined && (
-        <Card className="mb-4" id='EDIT_CARD'>
+        <Card className="mb-4" id="EDIT_CARD">
           <CardHeader>
-            <CardTitle>{editInvoiceId !== NEW_INVOICE_ID ? 'Edit Invoice' : 'Add Invoice'}</CardTitle>
+            <CardTitle>{editInvoiceId !== NEW_INVOICE_ID ? "Edit Invoice" : "Add Invoice"}</CardTitle>
           </CardHeader>
           <CardContent>
-            <InvoiceForm onNewInvoice={handleInvoiceAdded} onCancel={handleCancel} initialValues={editInvoice} isNew={editInvoiceId === NEW_INVOICE_ID} />
+            <InvoiceForm
+              onNewInvoice={handleInvoiceAdded}
+              onCancel={handleCancel}
+              initialValues={editInvoice}
+              isNew={editInvoiceId === NEW_INVOICE_ID}
+            />
           </CardContent>
         </Card>
       )}
       <h2 className="text-2xl font-bold">Invoices</h2>
       <div className="flex flex-col gap-y-2">
-        {bill.invoices.map(invoice => (
-            <Card key={invoice.id}>
-              <CardHeader>
-                <div className="flex justify-between">
-                  <div>
-                    <CardTitle>{invoice.description}</CardTitle>
-                    <CardDescription>{invoice.manual_id}</CardDescription>
-                  </div>
-                  <div>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        db.deleteInvoiceFromBill(bill.id, invoice.id)
-                        router.invalidate()
-                      }}
-                    >
-                      <TrashIcon />
-                    </Button>
-                    <Button variant="ghost" asChild>
-                      <Link to="." search={(prev) => ({ ...prev, editInvoiceId: invoice.id })} hash="EDIT_CARD" replace={true}>
-                        <PenIcon />
-                      </Link>
-                    </Button>
-                  </div>
+        {bill.invoices.map((invoice) => (
+          <Card key={invoice.id}>
+            <CardHeader>
+              <div className="flex justify-between">
+                <div>
+                  <CardTitle>{invoice.description}</CardTitle>
+                  <CardDescription>{invoice.manual_id}</CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p>Amount: {invoice.amount}</p>
-                <p>Date: {invoice.date.toLocaleDateString()}</p>
-              </CardContent>
-            </Card>
+                <div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      db.deleteInvoiceFromBill(bill.id, invoice.id);
+                      router.invalidate();
+                    }}
+                  >
+                    <TrashIcon />
+                  </Button>
+                  <Button variant="ghost" asChild>
+                    <Link
+                      to="."
+                      search={(prev) => ({
+                        ...prev,
+                        editInvoiceId: invoice.id,
+                      })}
+                      hash="EDIT_CARD"
+                      replace={true}
+                    >
+                      <PenIcon />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p>Amount: {invoice.amount}</p>
+              <p>Date: {invoice.date.toLocaleDateString()}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
-      </div>
-  )
+    </div>
+  );
 }
