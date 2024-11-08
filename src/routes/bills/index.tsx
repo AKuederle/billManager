@@ -160,9 +160,9 @@ function RouteComponent() {
               <CardContent>
                 <div className="flex flex-row justify-between">
                   <div>
-                    <p>Responsible: {bill.responsiblePerson}</p>
+                    <p>Verantwortliche:r: {bill.responsiblePerson}</p>
                     <p>IBAN: {bill.iban}</p>
-                    <p>Date: {bill.date.toLocaleDateString()}</p>
+                    <p>Datum: {bill.date.toLocaleDateString()}</p>
                   </div>
                   <ChevronRight className="h-6 w-6" />
                 </div>

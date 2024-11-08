@@ -102,10 +102,14 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
           name="manual_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Invoice Number</FormLabel>
+              <FormLabel>Belegnummer</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
+              <FormDescription>
+                Wenn du mehrere Kassenzettel hast, kannst du oben eine Zahl drauf schreiben, dann kann man das leichter
+                zuordnen.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -116,7 +120,7 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
           name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Amount</FormLabel>
+              <FormLabel>Betrag</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -136,17 +140,16 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type</FormLabel>
+              <FormLabel>Art der Ausgabe</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder="Kategorie auswählen" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Select type</SelectLabel>
-
+                    <SelectLabel>SJR Kategorien</SelectLabel>
                     {InvoiceTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -170,9 +173,9 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Beschreibung (Grund)</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input placeholder="z.B. Kürbisse schnitzen Sippenstunde" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

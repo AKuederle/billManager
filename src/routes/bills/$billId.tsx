@@ -134,19 +134,19 @@ function RouteComponent() {
         </CardHeader>
         <CardContent className="flex flex-col gap-y-4">
           <div className="">
-            <p>Responsible: {bill.responsiblePerson}</p>
+            <p>Verantwortliche:r: {bill.responsiblePerson}</p>
             <p>IBAN: {bill.iban}</p>
-            <p>Date: {bill.date.toLocaleDateString()}</p>
+            <p>Datum: {bill.date.toLocaleDateString()}</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
               <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_ID })} hash="EDIT_CARD" replace={true}>
-                Add Invoice
+                Beleg hinzufügen
               </Link>
             </Button>
 
             <DownloadDialog onContinue={() => handleExport()}>
-              <Button className="flex-1">Export as zip</Button>
+              <Button className="flex-1">zip exportieren</Button>
             </DownloadDialog>
           </div>
         </CardContent>
@@ -167,7 +167,7 @@ function RouteComponent() {
           </CardContent>
         </Card>
       )}
-      <h2 className="text-2xl font-bold">Invoices</h2>
+      <h2 className="text-2xl font-bold">Belege</h2>
       <div className="flex flex-col gap-y-2">
         {bill.invoices.map((invoice) => (
           <Card key={invoice.id}>
@@ -204,8 +204,8 @@ function RouteComponent() {
               </div>
             </CardHeader>
             <CardContent>
-              <p>Amount: {invoice.amount}</p>
-              <p>Date: {invoice.date.toLocaleDateString()}</p>
+              <p>Betrag: {invoice.amount} &euro;</p>
+              <p>Datum: {invoice.date.toLocaleDateString()}</p>
             </CardContent>
           </Card>
         ))}
