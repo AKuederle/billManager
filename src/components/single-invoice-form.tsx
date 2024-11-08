@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { SelectGroup, SelectLabel } from "@radix-ui/react-select";
 import { useEffect } from "react";
+import MoneyInput from "./ui/money_input";
 
 const uploadFiles = async (files: FileList | null) => {
   if (!files) return undefined;
@@ -129,6 +130,20 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Betrag</FormLabel>
+              <FormControl>
+                <MoneyInput form={form} name="amount" label="Betrag" placeholder="0,00 €" />
               </FormControl>
               <FormMessage />
             </FormItem>
