@@ -134,7 +134,7 @@ export class LocalStorageDB {
 
       return {
         ...invoice,
-        amount: invoice.amount.toLocaleString("de-DE"),
+        amount: invoice.amount.toLocaleString("de-DE") + "€",
         files: invoice.files.map((f) => f.name),
       };
     });
@@ -162,20 +162,36 @@ export class LocalStorageDB {
         return values.join(";") + ";" + filesStr + "\n";
       })
       .join("");
-    const csvHeader =
-      Object.keys(invoices[0])
-        .filter((key) => key !== "id")
-        .join(";") + "\n";
+    const csvHeader = "Belegnummer;Betrag;Typ;Beschreibung;Datum;Dateien\n";
+    // Object.keys(invoices[0])
+    //   .filter((key) => key !== "id")
+    //   .join(";") + "\n";
 
     zip.file("invoices.csv", csvHeader + csvContent);
 
     // We store the invoice totals in a separate csv
     const totalsCsvContent = InvoiceTypes.map((type) => {
       const amount = invoiceTotals[type] || 0;
-      return `${type};${amount.toLocaleString("de-DE")}\n`;
+      return `${type};${amount.toLocaleString("de-DE") + "€"}\n`;
     }).join("");
 
-    zip.file("invoice_totals.csv", "Type;Amount\n" + totalsCsvContent);
+    const gesamtausgaben = InvoiceTypes.filter((type) => type !== "Einahme" && type !== "Vorschuss").reduce(
+      (acc, type) => {
+        return acc + (invoiceTotals[type] || 0);
+      },
+      0,
+    );
+
+    const gesamteinnahmen = (invoiceTotals["Einahme"] || 0) + (invoiceTotals["Vorschuss"] || 0);
+
+    const endbestand = gesamteinnahmen - gesamtausgaben;
+
+    const summaryCsvContent =
+      `Gesamtausgaben;${gesamtausgaben.toLocaleString("de-DE") + "€"}\n` +
+      `Gesamteinnahmen;${gesamteinnahmen.toLocaleString("de-DE") + "€"}\n` +
+      `Endbestand;${endbestand.toLocaleString("de-DE") + "€"}\n`;
+
+    zip.file("invoice_totals.csv", "Kategorie;Betrag\n" + totalsCsvContent + summaryCsvContent);
 
     // Add each file to the zip with an index and appropriate extension
     files.forEach((f) => {
