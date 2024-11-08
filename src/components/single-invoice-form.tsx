@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { SelectGroup, SelectLabel } from "@radix-ui/react-select";
 import { useEffect } from "react";
-import MoneyInput from "./ui/money_input";
 
 const uploadFiles = async (files: FileList | null) => {
   if (!files) return undefined;
@@ -123,27 +122,17 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
             <FormItem>
               <FormLabel>Betrag</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Betrag</FormLabel>
-              <FormControl>
-                <MoneyInput form={form} name="amount" label="Betrag" placeholder="0,00 €" />
+                <div className="flex items-center">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    className="flex-1"
+                  />
+                  <span className="ml-2">€</span>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -237,7 +226,7 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
           name="files"
           render={({ field: { value, onChange, ...fieldProps } }) => (
             <FormItem>
-              <FormLabel>Files</FormLabel>
+              <FormLabel>Dateien</FormLabel>
               <FormControl>
                 <Input
                   type="file"
@@ -250,6 +239,7 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
                 />
               </FormControl>
               <FormMessage />
+              <FormDescription>z.B. Bilder von Kassenzetteln oder Rechnungen als PDF</FormDescription>
               {files && (
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   {files.map((file, index) =>
@@ -257,7 +247,7 @@ export function InvoiceForm({ onNewInvoice, onCancel, initialValues, isNew }: Pr
                       <img key={index} src={file.data} alt={`File ${index + 1}`} className="w-full rounded-md" />
                     ) : (
                       <div key={index} className="rounded-md border p-4 text-center">
-                        PDF Document {index + 1}
+                        PDF Dokument {index + 1}
                       </div>
                     ),
                   )}
