@@ -155,7 +155,7 @@ function RouteComponent() {
       {editInvoice !== undefined && (
         <Card className="mb-4" id="EDIT_CARD">
           <CardHeader>
-            <CardTitle>{editInvoiceId !== NEW_ID ? "Edit Invoice" : "Add Invoice"}</CardTitle>
+            <CardTitle>{editInvoiceId !== NEW_ID ? "Rechnung bearbeiten" : "Neue Rechnung"}</CardTitle>
           </CardHeader>
           <CardContent>
             <InvoiceForm
