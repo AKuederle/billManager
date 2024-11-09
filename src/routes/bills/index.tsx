@@ -139,6 +139,7 @@ function RouteComponent() {
                         db.deleteBill(bill.id);
                         router.invalidate();
                       }}
+                      aria-label="Abrechnung löschen"
                     >
                       <TrashIcon />
                     </Button>
@@ -150,6 +151,7 @@ function RouteComponent() {
                           editBillId: bill.id,
                         })}
                         replace={true}
+                        aria-label="Abrechnung bearbeiten"
                       >
                         <PenIcon />
                       </Link>
@@ -282,6 +284,7 @@ const BillForm = ({ onBillSaved, onCancel, initialValues, isNew }: Props) => {
                     <Button
                       variant={"outline"}
                       className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                      aria-label="Datum auswählen"
                     >
                       {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -304,10 +307,10 @@ const BillForm = ({ onBillSaved, onCancel, initialValues, isNew }: Props) => {
           )}
         />
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button type="submit" className="flex-1">
+          <Button type="submit" className="flex-1" aria-label={isNew ? "Abrechnung erstellen" : "Abrechnung speichern"}>
             {isNew ? "Erstellen" : "Speichern"}
           </Button>
-          <Button variant="outline" type="reset" className="flex-1" onClick={handleCancel}>
+          <Button variant="outline" type="reset" className="flex-1" onClick={handleCancel} aria-label="Abbrechen">
             Abbrechen
           </Button>
         </div>

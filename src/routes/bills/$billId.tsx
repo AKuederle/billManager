@@ -140,13 +140,13 @@ function RouteComponent() {
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button className="flex-1" disabled={editInvoiceId !== undefined} asChild>
-              <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_ID })} hash="EDIT_CARD" replace={true}>
+              <Link to="." search={(prev) => ({ ...prev, editInvoiceId: NEW_ID })} hash="EDIT_CARD" replace={true} aria-label="Beleg hinzufügen">
                 Beleg hinzufügen
               </Link>
             </Button>
 
             <DownloadDialog onContinue={() => handleExport()}>
-              <Button className="flex-1">zip exportieren</Button>
+              <Button className="flex-1" aria-label="ZIP exportieren">zip exportieren</Button>
             </DownloadDialog>
           </div>
         </CardContent>
@@ -155,7 +155,7 @@ function RouteComponent() {
       {editInvoice !== undefined && (
         <Card className="mb-4" id="EDIT_CARD">
           <CardHeader>
-            <CardTitle>{editInvoiceId !== NEW_ID ? "Rechnung bearbeiten" : "Neue Rechnung"}</CardTitle>
+            <CardTitle>{editInvoiceId !== NEW_ID ? "Beleg bearbeiten" : "Neue Beleg"}</CardTitle>
           </CardHeader>
           <CardContent>
             <InvoiceForm
@@ -184,6 +184,7 @@ function RouteComponent() {
                       db.deleteInvoiceFromBill(bill.id, invoice.id);
                       router.invalidate();
                     }}
+                    aria-label="Beleg löschen"
                   >
                     <TrashIcon />
                   </Button>
@@ -196,6 +197,7 @@ function RouteComponent() {
                       })}
                       hash="EDIT_CARD"
                       replace={true}
+                      aria-label="Beleg bearbeiten"
                     >
                       <PenIcon />
                     </Link>
